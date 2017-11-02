@@ -2,6 +2,7 @@ package com.sotrh.lowpoly_starfox
 
 import com.sotrh.lowpoly_starfox.model.ModelLoader
 import com.sotrh.lowpoly_starfox.model.ModelRenderer
+import com.sotrh.lowpoly_starfox.shader.DebugShader
 import org.lwjgl.glfw.Callbacks
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.opengl.GL
@@ -34,14 +35,19 @@ fun main(args: Array<String>) {
 
     val quadModel = modelLoader.loadSimpleIndexedQuad()
 
+    val debugShader = DebugShader()
+
     while (!GLFW.glfwWindowShouldClose(window)) {
         modelRenderer.prepare()
+        debugShader.bind()
         modelRenderer.renderIndexed(quadModel)
+        debugShader.unbind()
 
         GLFW.glfwSwapBuffers(window)
         GLFW.glfwPollEvents()
     }
 
+    debugShader.cleanup()
     modelLoader.cleanup()
 
     Callbacks.glfwFreeCallbacks(window)
