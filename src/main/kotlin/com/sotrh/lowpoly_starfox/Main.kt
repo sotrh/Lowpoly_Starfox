@@ -1,9 +1,10 @@
 package com.sotrh.lowpoly_starfox
 
+import com.sotrh.lowpoly_starfox.model.ModelLoader
+import com.sotrh.lowpoly_starfox.model.ModelRenderer
 import org.lwjgl.glfw.Callbacks
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.opengl.GL
-import org.lwjgl.opengl.GL11
 
 /**
  * Created by benjamin on 10/30/17
@@ -28,18 +29,20 @@ fun main(args: Array<String>) {
     GLFW.glfwMakeContextCurrent(window)
     GL.createCapabilities()
 
+    val modelLoader = ModelLoader()
+    val modelRenderer = ModelRenderer()
+
+    val quadModel = modelLoader.loadSimpleIndexedQuad()
+
     while (!GLFW.glfwWindowShouldClose(window)) {
-        GL11.glClearColor(0.4f, 0.4f, 0.5f, 1.0f)
-        GL11.glEnable(GL11.GL_DEPTH_BUFFER_BIT)
-        GL11.glClear(GL11.GL_COLOR_BUFFER_BIT or GL11.GL_DEPTH_BUFFER_BIT)
-
-        // render code here
-
-        GL11.glDisable(GL11.GL_DEPTH_BUFFER_BIT)
+        modelRenderer.prepare()
+        modelRenderer.renderIndexed(quadModel)
 
         GLFW.glfwSwapBuffers(window)
         GLFW.glfwPollEvents()
     }
+
+    modelLoader.cleanup()
 
     Callbacks.glfwFreeCallbacks(window)
     GLFW.glfwDestroyWindow(window)
