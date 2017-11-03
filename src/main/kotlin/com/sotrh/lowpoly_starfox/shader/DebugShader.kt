@@ -13,7 +13,7 @@ class DebugShader: Shader(VS_CODE, FS_CODE) {
             out vec3 color;
             uniform mat4 mvp;
             void main(void) {
-                gl_Position = mvp * vec4(position, 1.0);
+                gl_Position = /*mvp * */vec4(position, 1.0);
                 color = vec3(position.x + 0.5, 1.0, position.y + 0.5);
             }
             """

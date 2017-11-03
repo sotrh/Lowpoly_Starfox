@@ -25,13 +25,14 @@ fun main(args: Array<String>) {
     val debugShader = DebugShader()
 
     val camera = Camera()
-    camera.position.set(0f, 0f, -4f)
+    camera.position.set(0f, 0f, 4f)
 
     while (!display.shouldClose) {
+        debugShader.bind()
         debugShader.applyTransform(camera, display)
-
         modelRenderer.prepare()
         modelRenderer.renderIndexed(quadModel)
+        debugShader.unbind()
 
         display.swapBuffers()
         display.pollEvents()
