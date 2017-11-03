@@ -1,10 +1,17 @@
 package com.sotrh.lowpoly_starfox.model
 
+import com.sotrh.lowpoly_starfox.camera.Camera
+import com.sotrh.lowpoly_starfox.display.Display
+import com.sotrh.lowpoly_starfox.shader.Shader
+import org.joml.Matrix4f
+import org.lwjgl.BufferUtils
 import org.lwjgl.opengl.GL11
 import org.lwjgl.opengl.GL20
 import org.lwjgl.opengl.GL30
 
 class ModelRenderer {
+
+
     fun prepare() {
         // this won't be necessary once we implement a skybox
         GL11.glClearColor(0.3f, 0.3f, 0.5f, 1.0f)

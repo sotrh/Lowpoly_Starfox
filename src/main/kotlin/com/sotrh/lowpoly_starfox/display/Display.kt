@@ -1,5 +1,7 @@
 package com.sotrh.lowpoly_starfox.display
 
+import com.sotrh.lowpoly_starfox.common.toRadians
+import org.joml.Matrix4f
 import org.lwjgl.glfw.GLFW
 
 class Display(val windowId: Long, val id: Int) {
@@ -36,5 +38,9 @@ class Display(val windowId: Long, val id: Int) {
 
     fun pollEvents() {
         GLFW.glfwPollEvents()
+    }
+
+    fun applyDisplayTransformation(matrix: Matrix4f) {
+        matrix.perspective(80f.toRadians(), width.toFloat() / height, 0.1f, 1000f)
     }
 }
