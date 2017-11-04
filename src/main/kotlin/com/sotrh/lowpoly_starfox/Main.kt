@@ -1,7 +1,9 @@
 package com.sotrh.lowpoly_starfox
 
 import com.sotrh.lowpoly_starfox.camera.Camera
+import com.sotrh.lowpoly_starfox.camera.DebugCameraController
 import com.sotrh.lowpoly_starfox.display.DisplayManager
+import com.sotrh.lowpoly_starfox.input.InputManager
 import com.sotrh.lowpoly_starfox.model.ModelLoader
 import com.sotrh.lowpoly_starfox.model.ModelRenderer
 import com.sotrh.lowpoly_starfox.shader.DebugShader
@@ -17,6 +19,11 @@ fun main(args: Array<String>) {
     val displayManager = DisplayManager()
     val display = displayManager.createDisplay(800, 600)
 
+    val inputManager = InputManager(display)
+    val debugCameraController = DebugCameraController()
+    inputManager.addKeyListener(debugCameraController)
+    inputManager.addMouseListener(debugCameraController)
+
     val modelLoader = ModelLoader()
     val modelRenderer = ModelRenderer()
 
@@ -28,6 +35,8 @@ fun main(args: Array<String>) {
     camera.position.set(0f, 0f, 4f)
 
     while (!display.shouldClose) {
+        debugCameraController.updateCamera(camera, 1.0f)
+
         debugShader.bind()
         debugShader.applyTransform(camera, display)
         modelRenderer.prepare()
@@ -40,5 +49,6 @@ fun main(args: Array<String>) {
 
     debugShader.cleanup()
     modelLoader.cleanup()
+    inputManager.cleanup()
     displayManager.cleanup()
 }

@@ -4,11 +4,11 @@ import com.sotrh.lowpoly_starfox.common.toRadians
 import org.joml.Matrix4f
 import org.lwjgl.glfw.GLFW
 
-class Display(val windowId: Long, val id: Int) {
+class Display(val windowId: Long, val id: Int, startWidth: Int, startHeight: Int) {
 
-    var width = 0
+    var width = startWidth
         private set
-    var height = 0
+    var height = startHeight
         private set
 
     val shouldClose get() =  GLFW.glfwWindowShouldClose(windowId)
@@ -41,6 +41,6 @@ class Display(val windowId: Long, val id: Int) {
     }
 
     fun applyDisplayTransformation(matrix: Matrix4f) {
-        matrix.perspective(80f.toRadians(), width.toFloat() / height, 0.1f, 1000f)
+        matrix.identity().perspective(80f.toRadians(), width.toFloat() / height, 0.1f, 1000f)
     }
 }

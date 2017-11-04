@@ -18,7 +18,7 @@ class DisplayManager {
         val window = GLFW.glfwCreateWindow(width, height, "Low-Poly Starfox", 0L, 0L)
         if (window == 0L) throw IllegalStateException("Failed to create GLFW window")
 
-        val display = Display(window, displayList.size)
+        val display = Display(window, displayList.size, width, height)
         displayList.add(display)
 
         GLFW.glfwSwapInterval(1)

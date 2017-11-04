@@ -12,6 +12,6 @@ class Camera {
     var yaw: Float = 0.0f
 
     fun applyCameraTransformation(matrix: Matrix4f) {
-        matrix.rotateX(pitch).rotateY(pitch).translate(-position.x, -position.y, -position.z)
+        matrix.identity().rotateX(pitch).rotateY(yaw).translate(-position.x, -position.y, -position.z)
     }
 }
