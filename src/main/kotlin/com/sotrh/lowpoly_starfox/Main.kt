@@ -16,6 +16,8 @@ import org.lwjgl.glfw.GLFW
 fun main(args: Array<String>) {
     if (!GLFW.glfwInit()) throw IllegalStateException("GLFW failed to init")
 
+    var lastTime = GLFW.glfwGetTime()
+
     val displayManager = DisplayManager()
     val display = displayManager.createDisplay(800, 600)
 
@@ -35,7 +37,11 @@ fun main(args: Array<String>) {
     camera.position.set(0f, 0f, 4f)
 
     while (!display.shouldClose) {
-        debugCameraController.updateCamera(camera, 1.0f)
+        val currentTime = GLFW.glfwGetTime()
+        val deltaTime = (currentTime - lastTime).toFloat()
+        lastTime = currentTime
+
+        debugCameraController.updateCamera(camera, deltaTime)
 
         debugShader.bind()
         debugShader.applyTransform(camera, display)
