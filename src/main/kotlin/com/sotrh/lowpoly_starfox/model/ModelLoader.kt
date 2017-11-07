@@ -91,4 +91,31 @@ class ModelLoader {
         GL20.glVertexAttribPointer(attributeNumber, components, GL11.GL_FLOAT, false, 0, 0L)
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0)
     }
+
+    fun loadNormalTexturedModel(data: FloatArray): Model {
+        val vao = GL30.glGenVertexArrays()
+        vaos.add(vao)
+
+        GL30.glBindVertexArray(vao)
+
+        val buffer = BufferUtils.createFloatBuffer(data.size)
+        buffer.put(data)
+        buffer.flip()
+
+        val vbo = GL15.glGenBuffers()
+        vbos.add(vbo)
+
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vbo)
+        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, buffer, GL15.GL_STATIC_DRAW)
+
+        GL20.glVertexAttribPointer(0, 3, GL11.GL_FLOAT, false, 8 * 4, 0L)
+        GL20.glVertexAttribPointer(1, 3, GL11.GL_FLOAT, false, 8 * 4, 3L * 4L)
+        GL20.glVertexAttribPointer(2, 2, GL11.GL_FLOAT, false, 8 * 4, 6L * 4L)
+
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0)
+
+        GL30.glBindVertexArray(0)
+
+        return Model(vao, data.size / 8, intArrayOf(0, 1, 2))
+    }
 }

@@ -10,10 +10,12 @@ class DebugShader: Shader(VS_CODE, FS_CODE) {
         val VS_CODE = """
             #version 150 core
             in vec3 position;
+            in vec3 normal;
+            in vec2 texCoord;
             out vec3 color;
             uniform mat4 mvp;
             void main(void) {
-                color = vec3(position.x + 0.5, 1.0, position.y + 0.5);
+                color = vec3(normal.x + 0.5, normal.y + 0.5, normal.z + 0.5);
                 gl_Position = mvp * vec4(position, 1.0);
             }
             """
@@ -36,6 +38,8 @@ class DebugShader: Shader(VS_CODE, FS_CODE) {
 
     override fun bindAttributes() {
         bindAttribute(0, "position")
+        bindAttribute(1, "normal")
+        bindAttribute(2, "texCoord")
     }
 
     fun applyTransform(camera: Camera, display: Display) {

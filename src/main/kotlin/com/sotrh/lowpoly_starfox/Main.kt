@@ -6,6 +6,7 @@ import com.sotrh.lowpoly_starfox.display.DisplayManager
 import com.sotrh.lowpoly_starfox.input.InputManager
 import com.sotrh.lowpoly_starfox.model.ModelLoader
 import com.sotrh.lowpoly_starfox.model.ModelRenderer
+import com.sotrh.lowpoly_starfox.model.ObjLoader
 import com.sotrh.lowpoly_starfox.shader.DebugShader
 import org.lwjgl.glfw.GLFW
 
@@ -31,6 +32,9 @@ fun main(args: Array<String>) {
 
     val quadModel = modelLoader.loadSimpleIndexedQuad()
 
+    val objModelLoader = ObjLoader()
+    val objModel = objModelLoader.loadObjWithTextureAndNormals("cube.obj", modelLoader)
+
     val debugShader = DebugShader()
 
     val camera = Camera()
@@ -46,6 +50,7 @@ fun main(args: Array<String>) {
         debugShader.bind()
         debugShader.applyTransform(camera, display)
         modelRenderer.prepare()
+        modelRenderer.render(objModel)
         modelRenderer.renderIndexed(quadModel)
         debugShader.unbind()
 

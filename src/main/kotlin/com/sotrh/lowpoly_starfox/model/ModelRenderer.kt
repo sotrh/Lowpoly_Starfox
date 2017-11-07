@@ -14,8 +14,11 @@ class ModelRenderer {
 
     fun prepare() {
         // this won't be necessary once we implement a skybox
+        GL11.glEnable(GL11.GL_DEPTH_TEST)
+
         GL11.glClearColor(0.3f, 0.3f, 0.5f, 1.0f)
-        GL11.glClear(GL11.GL_COLOR_BUFFER_BIT)
+        GL11.glClear(GL11.GL_COLOR_BUFFER_BIT or GL11.GL_DEPTH_BUFFER_BIT)
+
     }
 
     fun render(model: Model) {
