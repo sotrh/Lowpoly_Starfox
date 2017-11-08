@@ -66,8 +66,6 @@ class ObjLoader {
         val vertexData = FloatArray(faceVertexList.size * floatsPerVertex)
         faceVertexList.forEachIndexed { index, faceVertex ->
             var position = index * floatsPerVertex
-            println("position = $position")
-            println("faceVertex = $faceVertex")
             vertexData[position++] = vertexList[faceVertex.v - 1].x
             vertexData[position++] = vertexList[faceVertex.v - 1].y
             vertexData[position++] = vertexList[faceVertex.v - 1].z

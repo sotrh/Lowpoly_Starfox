@@ -51,4 +51,14 @@ class DebugShader: Shader(VS_CODE, FS_CODE) {
 
         GL20.glUniformMatrix4fv(uniformMvp, false, mvp.get(arrayMvp))
     }
+
+    fun applyTransform(camera: Camera, display: Display, modelMatrix: Matrix4f) {
+        mvp.identity()
+        camera.applyCameraTransformation(view)
+        display.applyDisplayTransformation(projection)
+
+        projection.mul(view.mul(modelMatrix, mvp), mvp)
+
+        GL20.glUniformMatrix4fv(uniformMvp, false, mvp.get(arrayMvp))
+    }
 }

@@ -8,3 +8,5 @@ import org.joml.Math
 
 fun Float.toRadians() = this.toDouble().toRadians().toFloat()
 fun Double.toRadians() = Math.toRadians(this)
+
+val PIf = Math.PI.toFloat()

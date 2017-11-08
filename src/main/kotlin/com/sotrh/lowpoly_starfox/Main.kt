@@ -2,12 +2,16 @@ package com.sotrh.lowpoly_starfox
 
 import com.sotrh.lowpoly_starfox.camera.Camera
 import com.sotrh.lowpoly_starfox.camera.DebugCameraController
+import com.sotrh.lowpoly_starfox.common.PIf
 import com.sotrh.lowpoly_starfox.display.DisplayManager
+import com.sotrh.lowpoly_starfox.entity.Entity
+import com.sotrh.lowpoly_starfox.entity.EntityManager
 import com.sotrh.lowpoly_starfox.input.InputManager
 import com.sotrh.lowpoly_starfox.model.ModelLoader
 import com.sotrh.lowpoly_starfox.model.ModelRenderer
 import com.sotrh.lowpoly_starfox.model.ObjLoader
 import com.sotrh.lowpoly_starfox.shader.DebugShader
+import org.joml.Matrix4f
 import org.lwjgl.glfw.GLFW
 
 /**
@@ -30,15 +34,31 @@ fun main(args: Array<String>) {
     val modelLoader = ModelLoader()
     val modelRenderer = ModelRenderer()
 
-    val quadModel = modelLoader.loadSimpleIndexedQuad()
-
     val objModelLoader = ObjLoader()
-    val objModel = objModelLoader.loadObjWithTextureAndNormals("cube.obj", modelLoader)
+    val objModel = objModelLoader.loadObjWithTextureAndNormals("egg1_msd_uv.obj", modelLoader)
 
     val debugShader = DebugShader()
 
     val camera = Camera()
     camera.position.set(0f, 0f, 4f)
+
+    // create the entities
+    val entityManager = EntityManager()
+    val range = -5..5
+    range.forEach { x ->
+        range.forEach { y ->
+            range.forEach { z ->
+                val entity = Entity(objModel)
+                entity.position.set(x * 10f, y * 10f, z * 10f)
+                entity.yaw = y * PIf / 10f
+                entity.pitch = x * PIf / 10f
+                entity.roll = z* PIf / 10f
+                entityManager.addEntity(entity)
+            }
+        }
+    }
+
+    val modelMatrix = Matrix4f()
 
     while (!display.shouldClose) {
         val currentTime = GLFW.glfwGetTime()
@@ -48,10 +68,18 @@ fun main(args: Array<String>) {
         debugCameraController.updateCamera(camera, deltaTime)
 
         debugShader.bind()
-        debugShader.applyTransform(camera, display)
         modelRenderer.prepare()
-        modelRenderer.render(objModel)
-        modelRenderer.renderIndexed(quadModel)
+
+        entityManager.forEachEntity { entity ->
+            modelMatrix.identity()
+                    .translate(entity.position)
+                    .rotateZ(entity.roll)
+                    .rotateX(entity.pitch)
+                    .rotateY(entity.yaw)
+            debugShader.applyTransform(camera, display, modelMatrix)
+            modelRenderer.render(entity.model)
+        }
+
         debugShader.unbind()
 
         display.swapBuffers()
