@@ -1,6 +1,6 @@
 package com.sotrh.lowpoly_starfox.model
 
-import com.sotrh.lowpoly_starfox.file.FileLoader
+import com.sotrh.lowpoly_starfox.file.FileUtil
 import org.joml.Vector2f
 import org.joml.Vector3f
 
@@ -17,7 +17,7 @@ class ObjLoader {
         val texCoordList = mutableListOf<Vector2f>()
         val faceVertexList = mutableListOf<FaceVertex>()
 
-        FileLoader.getResourceReader(filename).use {
+        FileUtil.getResourceAsReader(filename).use {
             var line = it.readLine()
 
             // get the vertex data

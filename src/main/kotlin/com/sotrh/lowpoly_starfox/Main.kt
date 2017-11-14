@@ -11,6 +11,7 @@ import com.sotrh.lowpoly_starfox.model.ModelLoader
 import com.sotrh.lowpoly_starfox.model.ModelRenderer
 import com.sotrh.lowpoly_starfox.model.ObjLoader
 import com.sotrh.lowpoly_starfox.shader.DebugShader
+import com.sotrh.lowpoly_starfox.texture.TextureManager
 import org.joml.Matrix4f
 import org.lwjgl.glfw.GLFW
 
@@ -36,6 +37,9 @@ fun main(args: Array<String>) {
 
     val objModelLoader = ObjLoader()
     val objModel = objModelLoader.loadObjWithTextureAndNormals("egg1_msd_uv.obj", modelLoader)
+
+    val textureManager = TextureManager()
+    val texture = textureManager.loadTexture2DFromResource("textures/test_texture.png")
 
     val debugShader = DebugShader()
 
@@ -70,6 +74,7 @@ fun main(args: Array<String>) {
         debugShader.bind()
         modelRenderer.prepare()
 
+        debugShader.bindTexture(texture)
         entityManager.forEachEntity { entity ->
             modelMatrix.identity()
                     .translate(entity.position)
