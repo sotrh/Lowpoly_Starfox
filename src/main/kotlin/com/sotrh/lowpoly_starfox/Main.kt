@@ -81,7 +81,7 @@ fun main(args: Array<String>) {
 
         debugShader.bindTexture(texture)
         debugShader.setLightUniforms(light)
-        debugShader.setReflectivityAndLightDamper(0.5f, 0.2f)
+        debugShader.setReflectivityAndLightDamper(0.5f, 32f)
         entityManager.forEachEntity { entity ->
             modelMatrix.identity()
                     .translate(entity.position)
