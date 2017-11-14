@@ -7,12 +7,14 @@ import com.sotrh.lowpoly_starfox.display.DisplayManager
 import com.sotrh.lowpoly_starfox.entity.Entity
 import com.sotrh.lowpoly_starfox.entity.EntityManager
 import com.sotrh.lowpoly_starfox.input.InputManager
+import com.sotrh.lowpoly_starfox.light.Light
 import com.sotrh.lowpoly_starfox.model.ModelLoader
 import com.sotrh.lowpoly_starfox.model.ModelRenderer
 import com.sotrh.lowpoly_starfox.model.ObjLoader
 import com.sotrh.lowpoly_starfox.shader.DebugShader
 import com.sotrh.lowpoly_starfox.texture.TextureManager
 import org.joml.Matrix4f
+import org.joml.Vector3f
 import org.lwjgl.glfw.GLFW
 
 /**
@@ -40,6 +42,8 @@ fun main(args: Array<String>) {
 
     val textureManager = TextureManager()
     val texture = textureManager.loadTexture2DFromResource("textures/test_texture.png")
+
+    val light = Light(color = Vector3f(1f, 1f, 1f))
 
     val debugShader = DebugShader()
 
@@ -70,11 +74,14 @@ fun main(args: Array<String>) {
         lastTime = currentTime
 
         debugCameraController.updateCamera(camera, deltaTime)
+        light.position.set(camera.position)
 
         debugShader.bind()
         modelRenderer.prepare()
 
         debugShader.bindTexture(texture)
+        debugShader.setLightUniforms(light)
+        debugShader.setReflectivityAndLightDamper(0.5f, 0.2f)
         entityManager.forEachEntity { entity ->
             modelMatrix.identity()
                     .translate(entity.position)
