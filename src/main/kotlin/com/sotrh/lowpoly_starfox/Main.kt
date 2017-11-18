@@ -101,5 +101,6 @@ fun main(args: Array<String>) {
     debugShader.cleanup()
     modelLoader.cleanup()
     inputManager.cleanup()
+    textureManager.cleanup()
     displayManager.cleanup()
 }

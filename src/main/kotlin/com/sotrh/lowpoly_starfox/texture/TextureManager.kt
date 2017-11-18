@@ -15,7 +15,20 @@ import kotlin.experimental.and
  */
 class TextureManager {
 
+    private val textureMap = mutableMapOf<String, Texture>()
+
+    fun cleanup() {
+        textureMap.forEach { (_, texture) ->
+            GL11.glDeleteTextures(texture.textureId)
+        }
+        textureMap.clear()
+    }
+
     fun loadTexture2DFromResource(resource: String): Texture {
+        if (textureMap.containsKey(resource)) {
+            return textureMap[resource]!!
+        }
+
         val imageBuffer = FileUtil.getResourceAsByteBuffer(resource)
 
         MemoryStack.stackPush().use { stack ->
@@ -42,7 +55,9 @@ class TextureManager {
             val components = comp.get(0)
             val textureId = createOpenGLTexture(components, width, height, image)
 
-            return Texture(textureId, resource, width, height, components, isHdrFromMemory)
+            val texture = Texture(textureId, resource, width, height, components, isHdrFromMemory)
+            textureMap.put(resource, texture)
+            return texture
         }
     }
 
