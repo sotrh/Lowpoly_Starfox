@@ -79,16 +79,15 @@ class DebugShader: Shader(VS_CODE, FS_CODE) {
     private val transform = Matrix4f()
     private val view = Matrix4f()
     private val projection = Matrix4f()
-    private val arrayMvp = FloatArray(16)
 
-    private val uniformMvp = GL20.glGetUniformLocation(programId, "mvp")
-    private val uniformModel = GL20.glGetUniformLocation(programId, "model")
-    private val uniformInvView = GL20.glGetUniformLocation(programId, "invView")
+    private val mvpUniform = Uniform(programId, "mvp")
+    private val modelUniform = Uniform(programId, "model")
+    private val invViewUniform = Uniform(programId, "invView")
 
-    private val uniformLightColor = GL20.glGetUniformLocation(programId, "lightColor")
-    private val uniformLightPosition = GL20.glGetUniformLocation(programId, "lightPosition")
-    private val uniformShineDamper = GL20.glGetUniformLocation(programId, "shineDamper")
-    private val uniformReflectivity = GL20.glGetUniformLocation(programId, "reflectivity")
+    private val lightColorUniform = Uniform(programId, "lightColor")
+    private val lightPositionUniform = Uniform(programId, "lightPosition")
+    private val shineDamperUniform = Uniform(programId, "shineDamper")
+    private val reflectivityUniform = Uniform(programId, "reflectivity")
 
     override fun bindAttributes() {
         bindAttribute(0, "position")
@@ -103,11 +102,11 @@ class DebugShader: Shader(VS_CODE, FS_CODE) {
 
         projection.mul(view.mul(modelMatrix, transform), transform)
 
-        GL20.glUniformMatrix4fv(uniformMvp, false, transform.get(arrayMvp))
-        GL20.glUniformMatrix4fv(uniformModel, false, modelMatrix.get(arrayMvp))
+        mvpUniform.bindMatrix4f(transform)
+        modelUniform.bindMatrix4f(modelMatrix)
 
         transform.set(view).invert()
-        GL20.glUniformMatrix4fv(uniformInvView, false, transform.get(arrayMvp))
+        invViewUniform.bindMatrix4f(transform)
     }
 
     fun bindTexture(texture: Texture, activeTextureSlot: Int = 0) {
@@ -116,12 +115,12 @@ class DebugShader: Shader(VS_CODE, FS_CODE) {
     }
 
     fun setLightUniforms(light: Light) {
-        GL20.glUniform3f(uniformLightColor, light.color.x, light.color.y, light.color.z)
-        GL20.glUniform3f(uniformLightPosition, light.position.x, light.position.y, light.position.z)
+        lightColorUniform.bindVector3f(light.color)
+        lightPositionUniform.bindVector3f(light.position)
     }
 
     fun setReflectivityAndLightDamper(reflectivity: Float, shineDamper: Float) {
-        GL20.glUniform1f(uniformReflectivity, reflectivity)
-        GL20.glUniform1f(uniformShineDamper, shineDamper)
+        reflectivityUniform.bindScalar(reflectivity)
+        shineDamperUniform.bindScalar(shineDamper)
     }
 }
