@@ -6,6 +6,7 @@ import com.sotrh.lowpoly_starfox.common.PIf
 import com.sotrh.lowpoly_starfox.display.DisplayManager
 import com.sotrh.lowpoly_starfox.entity.Entity
 import com.sotrh.lowpoly_starfox.entity.EntityManager
+import com.sotrh.lowpoly_starfox.font.FontManager
 import com.sotrh.lowpoly_starfox.input.InputManager
 import com.sotrh.lowpoly_starfox.light.Light
 import com.sotrh.lowpoly_starfox.model.ModelLoader
@@ -42,6 +43,9 @@ fun main(args: Array<String>) {
 
     val textureManager = TextureManager()
     val texture = textureManager.loadTexture2DFromResource("textures/test_texture.png")
+
+    val fontManager = FontManager()
+    fontManager.loadResourceAsBitmapFont("fonts/liberation_serif.fnt", textureManager)
 
     val light = Light(color = Vector3f(1f, 1f, 1f))
 

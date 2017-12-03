@@ -49,4 +49,19 @@ object FileUtil {
         newBuffer.put(buffer)
         return newBuffer
     }
+
+    fun tokenizeString(input: String): Array<String> {
+        val output = mutableListOf<String>()
+
+        var inString = false
+        var startIndex = 0
+        input.forEachIndexed { index, c ->
+            if (c.isWhitespace()) {
+                if (index > startIndex) output.add(input.substring(startIndex, index))
+                startIndex = index
+            }
+        }
+
+        return output.toTypedArray()
+    }
 }

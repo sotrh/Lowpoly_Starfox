@@ -1,6 +1,7 @@
 package com.sotrh.lowpoly_starfox.font
 
 import com.sotrh.lowpoly_starfox.file.FileUtil
+import com.sotrh.lowpoly_starfox.texture.TextureManager
 import org.lwjgl.BufferUtils
 import org.lwjgl.opengl.GL11
 import org.lwjgl.stb.STBTTBakedChar
@@ -13,7 +14,7 @@ import java.nio.ByteBuffer
  * Created by benjamin on 11/16/17
  */
 class FontManager {
-    fun loadFontFromResource(resource: String, fontHeight: Float): Font {
+    fun loadResourceAsTrueTypeFont(resource: String, fontHeight: Float): Font {
         val trueTypeFont = FileUtil.getResourceAsByteBuffer(resource, 512 * 1024)
                 ?: throw IllegalStateException("Unable to load font resource $resource")
 
@@ -40,12 +41,12 @@ class FontManager {
 
         val cdata = STBTTBakedChar.malloc(96)
 
-        val texture = createOpenGLTexture(trueTypeFont, fontHeight, cdata)
+        val texture = createTrueTypeOpenGLTexture(trueTypeFont, fontHeight, cdata)
 
         return Font(info, ascent, descent, lineGap, cdata, texture)
     }
 
-    private fun createOpenGLTexture(trueTypeFont: ByteBuffer, fontHeight: Float, cdata: STBTTBakedChar.Buffer?): Int {
+    private fun createTrueTypeOpenGLTexture(trueTypeFont: ByteBuffer, fontHeight: Float, cdata: STBTTBakedChar.Buffer?): Int {
         val bwidth = 512
         val bheight = 512
         val bitmap = BufferUtils.createByteBuffer(bwidth * bheight)
