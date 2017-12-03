@@ -1,62 +1,209 @@
 package com.sotrh.lowpoly_starfox.font
 
+import com.sotrh.lowpoly_starfox.common.Parser
+import com.sotrh.lowpoly_starfox.common.toIntOrZero
 import com.sotrh.lowpoly_starfox.file.FileUtil
 import com.sotrh.lowpoly_starfox.texture.TextureManager
-import org.lwjgl.BufferUtils
-import org.lwjgl.opengl.GL11
-import org.lwjgl.stb.STBTTBakedChar
-import org.lwjgl.stb.STBTTFontinfo
-import org.lwjgl.stb.STBTruetype
-import org.lwjgl.system.MemoryStack
-import java.nio.ByteBuffer
 
 /**
  * Created by benjamin on 11/16/17
  */
-class FontManager {
-    fun loadResourceAsTrueTypeFont(resource: String, fontHeight: Float): Font {
-        val trueTypeFont = FileUtil.getResourceAsByteBuffer(resource, 512 * 1024)
-                ?: throw IllegalStateException("Unable to load font resource $resource")
+class FontManager(private val textureManager: TextureManager) {
 
-        val info = STBTTFontinfo.create()
-        if (!STBTruetype.stbtt_InitFont(info, trueTypeFont)) {
-            throw IllegalStateException("Failed to intialize TrueType font information")
-        }
+    private val fontMap = mutableMapOf<String, BitmapFont>()
 
-        var ascent = 0
-        var descent = 0
-        var lineGap = 0
-
-        MemoryStack.stackPush().use { stack ->
-            val pAscent = stack.mallocInt(1)
-            val pDescent = stack.mallocInt(1)
-            val pLineGap = stack.mallocInt(1)
-
-            STBTruetype.stbtt_GetFontVMetrics(info, pAscent, pDescent, pLineGap)
-
-            ascent = pAscent.get(0)
-            descent = pDescent.get(0)
-            lineGap = pLineGap.get(0)
-        }
-
-        val cdata = STBTTBakedChar.malloc(96)
-
-        val texture = createTrueTypeOpenGLTexture(trueTypeFont, fontHeight, cdata)
-
-        return Font(info, ascent, descent, lineGap, cdata, texture)
+    fun cleanup() {
+        fontMap.clear()
     }
 
-    private fun createTrueTypeOpenGLTexture(trueTypeFont: ByteBuffer, fontHeight: Float, cdata: STBTTBakedChar.Buffer?): Int {
-        val bwidth = 512
-        val bheight = 512
-        val bitmap = BufferUtils.createByteBuffer(bwidth * bheight)
-        STBTruetype.stbtt_BakeFontBitmap(trueTypeFont, fontHeight, bitmap, bwidth, bheight, 32, cdata)
+    fun loadResourceAsBitmapFont(resource: String, fontDirectory: String = "fonts"): BitmapFont {
+        val resolvedResourcePath = "$resource/$fontDirectory"
 
-        val texture = GL11.glGenTextures()
-        GL11.glBindTexture(GL11.GL_TEXTURE_2D, texture)
-        GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_ALPHA, bwidth, bheight, 0, GL11.GL_ALPHA, GL11.GL_UNSIGNED_BYTE, bitmap)
-        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR)
-        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR)
-        return texture
+        if (fontMap.containsKey(resolvedResourcePath)) return fontMap[resolvedResourcePath]!!
+
+        val parser = FileUtil.getResourceAsReader("fonts/$resource").use {
+            Parser(it.readLines().joinToString("\n"))
+        }
+
+        parser.consumeWhitespace()
+        val info = parseInfo(parser)
+        parser.requireWhitespace()
+        val common = parseCommon(parser)
+        parser.requireWhitespace()
+        val pageArray = parsePages(parser, common.pages, fontDirectory)
+        parser.requireWhitespace()
+        val charArray = parseChars(parser)
+        parser.requireWhitespace()
+        val kernings = parseKernings(parser)
+
+        return BitmapFont(info, common, pageArray, charArray, kernings)
+    }
+
+    private fun parseInfo(parser: Parser): BitmapFont.Info {
+        parser.require("info")
+        parser.requireWhitespace()
+        val face = requireKeyEqualsParseString(parser, "face")
+        parser.requireWhitespace()
+        val size = requireKeyEqualsParseNumber(parser, "size")
+        parser.requireWhitespace()
+        val bold = requireKeyEqualsParseNumber(parser, "bold")
+        parser.requireWhitespace()
+        val italic = requireKeyEqualsParseNumber(parser, "italic")
+        parser.requireWhitespace()
+        val charset = requireKeyEqualsParseString(parser, "charset")
+        parser.requireWhitespace()
+        val unicode = requireKeyEqualsParseNumber(parser, "unicode")
+        parser.requireWhitespace()
+        val stretchH = requireKeyEqualsParseNumber(parser, "stretchH")
+        parser.requireWhitespace()
+        val smooth = requireKeyEqualsParseNumber(parser, "smooth")
+        parser.requireWhitespace()
+        val aa = requireKeyEqualsParseNumber(parser, "aa")
+        parser.requireWhitespace()
+        val padding = parsePadding(parser)
+        parser.requireWhitespace()
+        val spacing = parseSpacing(parser)
+
+        return BitmapFont.Info(face, size, bold, italic, charset, unicode, stretchH, smooth, aa, padding, spacing)
+    }
+
+    private fun parsePadding(parser: Parser): BitmapFont.Padding {
+        requireKeyEquals(parser, "padding")
+        parser.consumeWhitespace()
+        val top = parser.parseNumber().toIntOrZero()
+        parser.consumeWhitespace()
+        parser.require(",")
+        parser.consumeWhitespace()
+        val right = parser.parseNumber().toIntOrZero()
+        parser.consumeWhitespace()
+        parser.require(",")
+        parser.consumeWhitespace()
+        val bottom = parser.parseNumber().toIntOrZero()
+        parser.consumeWhitespace()
+        parser.require(",")
+        parser.consumeWhitespace()
+        val left = parser.parseNumber().toIntOrZero()
+
+        return BitmapFont.Padding(top, right, bottom, left)
+    }
+
+    private fun parseSpacing(parser: Parser): BitmapFont.Spacing {
+        requireKeyEquals(parser, "spacing")
+        parser.consumeWhitespace()
+        val x = parser.parseNumber().toIntOrZero()
+        parser.consumeWhitespace()
+        parser.require(",")
+        parser.consumeWhitespace()
+        val y = parser.parseNumber().toIntOrZero()
+
+        return BitmapFont.Spacing(x, y)
+    }
+
+    private fun parseCommon(parser: Parser): BitmapFont.Common {
+        parser.require("common")
+        parser.requireWhitespace()
+        val lineHeight = requireKeyEqualsParseNumber(parser, "lineHeight")
+        parser.requireWhitespace()
+        val base = requireKeyEqualsParseNumber(parser, "base")
+        parser.requireWhitespace()
+        val scaleW = requireKeyEqualsParseNumber(parser, "scaleW")
+        parser.requireWhitespace()
+        val scaleH = requireKeyEqualsParseNumber(parser, "scaleH")
+        parser.requireWhitespace()
+        val pages = requireKeyEqualsParseNumber(parser, "pages")
+        parser.requireWhitespace()
+        val packed = requireKeyEqualsParseNumber(parser, "packed")
+
+        return BitmapFont.Common(lineHeight, base, scaleW, scaleH, pages, packed)
+    }
+
+    private fun parsePages(parser: Parser, numPages: Int, fontDirectory: String): Array<BitmapFont.Page> {
+        assert(numPages > 0) { "Invalid page count: $numPages" }
+        return Array(numPages) {
+            if (it > 0) parser.requireWhitespace()
+            parser.require("page")
+            parser.requireWhitespace()
+            val id = requireKeyEqualsParseNumber(parser, "id")
+            parser.requireWhitespace()
+            val file = requireKeyEqualsParseString(parser, "file")
+
+            BitmapFont.Page(id, file, textureManager.loadTexture2DFromResource(file, fontDirectory, shouldPremultiplyAlpha = false))
+        }
+    }
+
+    private fun parseChars(parser: Parser): Array<BitmapFont.Char> {
+        val count = requireKeyParseCount(parser, "chars")
+        assert(count > 0) { "Invalid chars count: $count" }
+        parser.requireWhitespace()
+        return Array(count) {
+            if (it > 0) parser.requireWhitespace()
+            parser.require("char")
+            parser.requireWhitespace()
+            val id = requireKeyEqualsParseNumber(parser, "id")
+            parser.requireWhitespace()
+            val x = requireKeyEqualsParseNumber(parser, "x")
+            parser.requireWhitespace()
+            val y = requireKeyEqualsParseNumber(parser, "y")
+            parser.requireWhitespace()
+            val width = requireKeyEqualsParseNumber(parser, "width")
+            parser.requireWhitespace()
+            val height = requireKeyEqualsParseNumber(parser, "height")
+            parser.requireWhitespace()
+            val xoffset = requireKeyEqualsParseNumber(parser, "xoffset")
+            parser.requireWhitespace()
+            val yoffset = requireKeyEqualsParseNumber(parser, "yoffset")
+            parser.requireWhitespace()
+            val xadvance = requireKeyEqualsParseNumber(parser, "xadvance")
+            parser.requireWhitespace()
+            val page = requireKeyEqualsParseNumber(parser, "page")
+            parser.requireWhitespace()
+            val chnl = requireKeyEqualsParseNumber(parser, "chnl")
+
+            BitmapFont.Char(id, x, y, width, height, xoffset, yoffset, xadvance, page, chnl)
+        }
+    }
+
+    private fun parseKernings(parser: Parser): Map<Int, BitmapFont.Kerning> {
+        val count = requireKeyParseCount(parser, "kernings")
+        assert(count > 0) { "Invalid chars count: $count" }
+        parser.requireWhitespace()
+        val map = mutableMapOf<Int, BitmapFont.Kerning>()
+        repeat(count) {
+            if (it > 0) parser.requireWhitespace()
+            parser.require("kerning")
+            parser.requireWhitespace()
+            val first = requireKeyEqualsParseNumber(parser, "first")
+            parser.requireWhitespace()
+            val second = requireKeyEqualsParseNumber(parser, "second")
+            parser.requireWhitespace()
+            val amount = requireKeyEqualsParseNumber(parser, "amount")
+
+            map.put(first, BitmapFont.Kerning(first, second, amount))
+        }
+        return map
+    }
+
+    private fun requireKeyParseCount(parser: Parser, key: String): Int {
+        parser.require(key)
+        parser.requireWhitespace()
+        return requireKeyEqualsParseNumber(parser, "count")
+    }
+
+    private fun requireKeyEquals(parser: Parser, key: String) {
+        parser.require(key)
+        parser.consumeWhitespace()
+        parser.require("=")
+    }
+
+    private fun requireKeyEqualsParseString(parser: Parser, key: String): String {
+        requireKeyEquals(parser, key)
+        parser.consumeWhitespace()
+        return parser.parseString()
+    }
+
+    private fun requireKeyEqualsParseNumber(parser: Parser, key: String): Int {
+        requireKeyEquals(parser, key)
+        parser.consumeWhitespace()
+        return parser.parseNumber().toIntOrZero()
     }
 }

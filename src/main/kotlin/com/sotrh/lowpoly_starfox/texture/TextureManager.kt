@@ -24,12 +24,14 @@ class TextureManager {
         textureMap.clear()
     }
 
-    fun loadTexture2DFromResource(resource: String): Texture {
-        if (textureMap.containsKey(resource)) {
+    fun loadTexture2DFromResource(resource: String, textureDirectory: String = "textures", shouldPremultiplyAlpha: Boolean = true): Texture {
+        val resolvedResourcePath = "$textureDirectory/$resource"
+
+        if (textureMap.containsKey(resolvedResourcePath)) {
             return textureMap[resource]!!
         }
 
-        val imageBuffer = FileUtil.getResourceAsByteBuffer(resource)
+        val imageBuffer = FileUtil.getResourceAsByteBuffer(resolvedResourcePath)
 
         MemoryStack.stackPush().use { stack ->
             val w = stack.mallocInt(1)
@@ -53,15 +55,15 @@ class TextureManager {
             val width = w.get(0)
             val height = h.get(0)
             val components = comp.get(0)
-            val textureId = createOpenGLTexture(components, width, height, image)
+            val textureId = createOpenGLTexture(components, width, height, image, shouldPremultiplyAlpha)
 
-            val texture = Texture(textureId, resource, width, height, components, isHdrFromMemory)
+            val texture = Texture(textureId, resource, width, height, components, isHdrFromMemory, shouldPremultiplyAlpha)
             textureMap.put(resource, texture)
             return texture
         }
     }
 
-    private fun createOpenGLTexture(components: Int, width: Int, height: Int, image: ByteBuffer): Int {
+    private fun createOpenGLTexture(components: Int, width: Int, height: Int, image: ByteBuffer, shouldPremultiplyAlpha: Boolean): Int {
         val textureId = GL11.glGenTextures()
 
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, textureId)
@@ -76,9 +78,7 @@ class TextureManager {
             }
             GL11.GL_RGB
         } else {
-            premultiplyAlpha(width, height, image)
-            GL11.glEnable(GL11.GL_BLEND)
-            GL11.glBlendFunc(GL11.GL_ONE, GL11.GL_ONE_MINUS_SRC_ALPHA)
+            if (shouldPremultiplyAlpha) premultiplyAlpha(width, height, image)
             GL11.GL_RGBA
         }
 

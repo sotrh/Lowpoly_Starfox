@@ -17,6 +17,7 @@ import com.sotrh.lowpoly_starfox.texture.TextureManager
 import org.joml.Matrix4f
 import org.joml.Vector3f
 import org.lwjgl.glfw.GLFW
+import org.lwjgl.opengl.GL11
 
 /**
  * Created by benjamin on 10/30/17
@@ -42,10 +43,21 @@ fun main(args: Array<String>) {
     val objModel = objModelLoader.loadObjWithTextureAndNormals("egg1_msd_uv.obj", modelLoader)
 
     val textureManager = TextureManager()
-    val texture = textureManager.loadTexture2DFromResource("textures/test_texture.png")
+//    val texture = textureManager.loadTexture2DFromResource("test_texture.png")
 
-    val fontManager = FontManager()
-    fontManager.loadResourceAsBitmapFont("fonts/liberation_serif.fnt", textureManager)
+    val fontManager = FontManager(textureManager)
+    val font = fontManager.loadResourceAsBitmapFont("liberation_serif.fnt")
+    val texture = font.pageArray[0].texture
+
+    val fontQuad = modelLoader.loadNormalTexturedModel(floatArrayOf(
+            -50f, -50f, 0.0f, 0f, 0f, 1f, 1f, 1f,
+            50f, -50f, 0.0f, 0f, 0f, 1f, 0f, 1f,
+            50f, 50f, 0.0f, 0f, 0f, 1f, 0f, 0f,
+
+            -50f, -50f, 0.0f, 0f, 0f, 1f, 1f, 1f,
+            50f, 50f, 0.0f, 0f, 0f, 1f, 0f, 0f,
+            -50f, 50f, 0.0f, 0f, 0f, 1f, 1f, 0f
+    ))
 
     val light = Light(color = Vector3f(1f, 1f, 1f))
 
@@ -83,6 +95,10 @@ fun main(args: Array<String>) {
         debugShader.bind()
         modelRenderer.prepare()
 
+        if (!texture.isAlphaPremultiplied) {
+            GL11.glEnable(GL11.GL_BLEND)
+            GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA)
+        }
         debugShader.bindTexture(texture)
         debugShader.setLightUniforms(light)
         debugShader.setReflectivityAndLightDamper(0.5f, 32f)
@@ -96,6 +112,9 @@ fun main(args: Array<String>) {
             modelRenderer.render(entity.model)
         }
 
+        debugShader.applyTransform(camera, display, modelMatrix.identity())
+        modelRenderer.render(fontQuad)
+
         debugShader.unbind()
 
         display.swapBuffers()
@@ -104,6 +123,7 @@ fun main(args: Array<String>) {
 
     debugShader.cleanup()
     modelLoader.cleanup()
+    fontManager.cleanup()
     inputManager.cleanup()
     textureManager.cleanup()
     displayManager.cleanup()

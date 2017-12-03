@@ -71,7 +71,7 @@ class DebugShader: Shader(VS_CODE, FS_CODE) {
                 float dampedFactor = pow(specularFactor, shineDamper);
                 vec3 finalSpecular = dampedFactor * reflectivity * lightColor;
 
-                out_color = vec4(finalSpecular, 1.0) + vec4(diffuse, 1.0) * texture(textureSampler, pass_textureCoords);
+                out_color = vec4(diffuse, 1.0) * texture(textureSampler, pass_textureCoords);
             }
             """
     }

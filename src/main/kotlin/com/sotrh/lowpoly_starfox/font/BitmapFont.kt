@@ -1,26 +1,18 @@
 package com.sotrh.lowpoly_starfox.font
 
-import com.sotrh.lowpoly_starfox.file.FileUtil
 import com.sotrh.lowpoly_starfox.texture.Texture
 
 /**
  * Created by benjamin on 11/24/17
  */
-class BitmapFont(fontFilename: String) {
+class BitmapFont(val info: Info,
+                 val common: Common,
+                 val pageArray: Array<BitmapFont.Page>,
+                 val charArray: Array<BitmapFont.Char>,
+                 val kernings: Map<Int, BitmapFont.Kerning>
+) {
 
-//    val info: Info
-//    val common: Common
-
-    init {
-        val reader = FileUtil.getResourceAsReader(fontFilename)
-
-        val infoLine = reader.readLine()
-
-        var index = 0;
-
-    }
-
-    class Info(val face: String, val size: Int, val bold: Int, val italic: Int, val charset: String, val stretchH: Int, val smooth: Int, val aa: Int, val padding: Padding, val spacing: Spacing)
+    class Info(val face: String, val size: Int, val bold: Int, val italic: Int, val charset: String, val unicode: Int, val stretchH: Int, val smooth: Int, val aa: Int, val padding: Padding, val spacing: Spacing)
     class Padding(val top: Int, val right: Int, val bottom: Int, val left: Int)
     class Spacing(val x: Int, val y: Int)
     class Common(val lineHeight: Int, val base: Int, val scaleW: Int, val scaleH: Int, val pages: Int, val packed: Int)

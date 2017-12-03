@@ -8,4 +8,4 @@ data class Texture(val textureId: Int,
                    val width: Int,
                    val height: Int,
                    val components: Int,
-                   val isHdrFromMemory: Boolean)
+                   val isHdrFromMemory: Boolean, val isAlphaPremultiplied: Boolean)
