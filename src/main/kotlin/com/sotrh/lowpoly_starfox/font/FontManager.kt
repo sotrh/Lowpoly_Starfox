@@ -32,11 +32,11 @@ class FontManager(private val textureManager: TextureManager) {
         parser.requireWhitespace()
         val pageArray = parsePages(parser, common.pages, fontDirectory)
         parser.requireWhitespace()
-        val charArray = parseChars(parser)
+        val charMap = parseChars(parser)
         parser.requireWhitespace()
         val kernings = parseKernings(parser)
 
-        return BitmapFont(info, common, pageArray, charArray, kernings)
+        return BitmapFont(info, common, pageArray, charMap, kernings)
     }
 
     private fun parseInfo(parser: Parser): BitmapFont.Info {
@@ -131,11 +131,12 @@ class FontManager(private val textureManager: TextureManager) {
         }
     }
 
-    private fun parseChars(parser: Parser): Array<BitmapFont.Char> {
+    private fun parseChars(parser: Parser): MutableMap<Int, BitmapFont.Char> {
         val count = requireKeyParseCount(parser, "chars")
         assert(count > 0) { "Invalid chars count: $count" }
         parser.requireWhitespace()
-        return Array(count) {
+        val charMap = mutableMapOf<Int, BitmapFont.Char>()
+        repeat(count) {
             if (it > 0) parser.requireWhitespace()
             parser.require("char")
             parser.requireWhitespace()
@@ -159,8 +160,9 @@ class FontManager(private val textureManager: TextureManager) {
             parser.requireWhitespace()
             val chnl = requireKeyEqualsParseNumber(parser, "chnl")
 
-            BitmapFont.Char(id, x, y, width, height, xoffset, yoffset, xadvance, page, chnl)
+            charMap.put(id, BitmapFont.Char(id, x, y, width, height, xoffset, yoffset, xadvance, page, chnl))
         }
+        return charMap
     }
 
     private fun parseKernings(parser: Parser): Map<Int, BitmapFont.Kerning> {

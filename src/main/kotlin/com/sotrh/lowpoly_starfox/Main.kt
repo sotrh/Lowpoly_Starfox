@@ -15,6 +15,7 @@ import com.sotrh.lowpoly_starfox.model.ObjLoader
 import com.sotrh.lowpoly_starfox.shader.DebugShader
 import com.sotrh.lowpoly_starfox.texture.TextureManager
 import org.joml.Matrix4f
+import org.joml.Vector2f
 import org.joml.Vector3f
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.opengl.GL11
@@ -49,14 +50,23 @@ fun main(args: Array<String>) {
     val font = fontManager.loadResourceAsBitmapFont("liberation_serif.fnt")
     val texture = font.pageArray[0].texture
 
-    val fontQuad = modelLoader.loadNormalTexturedModel(floatArrayOf(
-            -50f, -50f, 0.0f, 0f, 0f, 1f, 1f, 1f,
-            50f, -50f, 0.0f, 0f, 0f, 1f, 0f, 1f,
-            50f, 50f, 0.0f, 0f, 0f, 1f, 0f, 0f,
+    // texcoords: x is the same, y is inverted
+    val charA = font.charMap['A'.toInt()]!!
+    val common = font.common
 
-            -50f, -50f, 0.0f, 0f, 0f, 1f, 1f, 1f,
-            50f, 50f, 0.0f, 0f, 0f, 1f, 0f, 0f,
-            -50f, 50f, 0.0f, 0f, 0f, 1f, 1f, 0f
+    val left = charA.x / common.scaleW.toFloat()
+    val bottom = (charA.y + charA.height) / common.scaleH.toFloat()
+    val right = (charA.x + charA.width) / common.scaleW.toFloat()
+    val top = charA.y / common.scaleH.toFloat()
+
+    val fontQuad = modelLoader.loadNormalTexturedModel(floatArrayOf(
+            -50f, -50f, 0.0f, 0f, 0f, 1f, left, bottom,
+            50f, -50f, 0.0f, 0f, 0f, 1f, right, bottom,
+            50f, 50f, 0.0f, 0f, 0f, 1f, right, top,
+
+            -50f, -50f, 0.0f, 0f, 0f, 1f, left, bottom,
+            50f, 50f, 0.0f, 0f, 0f, 1f, right, top,
+            -50f, 50f, 0.0f, 0f, 0f, 1f, left, top
     ))
 
     val light = Light(color = Vector3f(1f, 1f, 1f))

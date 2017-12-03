@@ -8,7 +8,7 @@ import com.sotrh.lowpoly_starfox.texture.Texture
 class BitmapFont(val info: Info,
                  val common: Common,
                  val pageArray: Array<BitmapFont.Page>,
-                 val charArray: Array<BitmapFont.Char>,
+                 val charMap: Map<Int, BitmapFont.Char>,
                  val kernings: Map<Int, BitmapFont.Kerning>
 ) {
 
