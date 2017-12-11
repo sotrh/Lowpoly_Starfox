@@ -7,6 +7,7 @@ import com.sotrh.lowpoly_starfox.display.DisplayManager
 import com.sotrh.lowpoly_starfox.entity.Entity
 import com.sotrh.lowpoly_starfox.entity.EntityManager
 import com.sotrh.lowpoly_starfox.font.FontManager
+import com.sotrh.lowpoly_starfox.font.TextRenderer
 import com.sotrh.lowpoly_starfox.input.InputManager
 import com.sotrh.lowpoly_starfox.light.Light
 import com.sotrh.lowpoly_starfox.model.ModelLoader
@@ -50,23 +51,17 @@ fun main(args: Array<String>) {
     val font = fontManager.loadResourceAsBitmapFont("liberation_serif.fnt")
     val texture = font.pageArray[0].texture
 
-    // texcoords: x is the same, y is inverted
-    val charA = font.charMap['A'.toInt()]!!
-    val common = font.common
-
-    val left = charA.x / common.scaleW.toFloat()
-    val bottom = (charA.y + charA.height) / common.scaleH.toFloat()
-    val right = (charA.x + charA.width) / common.scaleW.toFloat()
-    val top = charA.y / common.scaleH.toFloat()
+    val textRenderer = TextRenderer(font, modelLoader)
+    val texCoords = textRenderer.calcTexCoordsForChar('$')
 
     val fontQuad = modelLoader.loadNormalTexturedModel(floatArrayOf(
-            -50f, -50f, 0.0f, 0f, 0f, 1f, left, bottom,
-            50f, -50f, 0.0f, 0f, 0f, 1f, right, bottom,
-            50f, 50f, 0.0f, 0f, 0f, 1f, right, top,
+            -50f, -50f, 0.0f, 0f, 0f, 1f, texCoords.x, texCoords.y,
+            50f, -50f, 0.0f, 0f, 0f, 1f, texCoords.z, texCoords.y,
+            50f, 50f, 0.0f, 0f, 0f, 1f, texCoords.z, texCoords.w,
 
-            -50f, -50f, 0.0f, 0f, 0f, 1f, left, bottom,
-            50f, 50f, 0.0f, 0f, 0f, 1f, right, top,
-            -50f, 50f, 0.0f, 0f, 0f, 1f, left, top
+            -50f, -50f, 0.0f, 0f, 0f, 1f, texCoords.x, texCoords.y,
+            50f, 50f, 0.0f, 0f, 0f, 1f, texCoords.z, texCoords.w,
+            -50f, 50f, 0.0f, 0f, 0f, 1f, texCoords.x, texCoords.w
     ))
 
     val light = Light(color = Vector3f(1f, 1f, 1f))
@@ -98,6 +93,9 @@ fun main(args: Array<String>) {
         val currentTime = GLFW.glfwGetTime()
         val deltaTime = (currentTime - lastTime).toFloat()
         lastTime = currentTime
+
+        GL11.glClearColor(0.3f, 0.3f, 0.5f, 1.0f)
+        GL11.glClear(GL11.GL_COLOR_BUFFER_BIT or GL11.GL_DEPTH_BUFFER_BIT)
 
         debugCameraController.updateCamera(camera, deltaTime)
         light.position.set(camera.position)
